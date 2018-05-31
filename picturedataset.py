@@ -14,7 +14,7 @@ while True:
     current_state = GPIO.input(motion_pin)
     if current_state:
         print('>>> Kitten has been detected: ' + str(i))
-        file_name = '/home/pi/camera/kitten' + str(i) + '.png'
+        file_name = '/home/pi/Pictures/kittens/kitten' + str(i) + '.png'
         with picamera.PiCamera() as camera:
             camera.resolution = (640, 480)
             camera.CAPTURE_TIMEOUT = 60
