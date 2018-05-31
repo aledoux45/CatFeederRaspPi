@@ -2,6 +2,8 @@ from time import sleep
 import RPi.GPIO as GPIO
 import picamera
 
+# This file take cpitures of cats when the motion sensors detects the presence of a cat
+
 # Pin connections
 motion_pin = 4
 
