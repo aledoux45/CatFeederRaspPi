@@ -4,7 +4,7 @@ import smtplib
 import RPi.GPIO as GPIO
 from buzzer import *
 import picamera
-from emails_settings import * # To be modified for different user
+from config import *
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.MIMEImage import MIMEImage
@@ -51,7 +51,7 @@ def send_text_and_image(image_name):
     s.quit()
 
 
-def feed_cat():
+def dispense_food():
     # Set servo on Servo1Pin to 1200us (1.2ms)
     servo = GPIO.PWM(servo_pin, 50)
     servo.start(10.5)
@@ -61,6 +61,11 @@ def feed_cat():
 
 
 def take_cat_picture(file_name):
+    """
+    This function attempts to take a video of a kitten for a duration of 10s.
+    The picamera will start recording if the motion sensor detects the presence of a kitten
+    If after 10s the motion sensor still has not detected a kitten, the camera will still take a picture 
+    """
     video_taken = False
     i = 0
     while i < 100 and not video_taken:
@@ -85,47 +90,15 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(servo_pin, GPIO.OUT)
 GPIO.setup(motion_pin, GPIO.IN, GPIO.PUD_DOWN)
 
-# Initiate buzzer and camera and time_of_day
+# Initiate buzzer and camera
 buzzer = Buzzer(buzzer_pin)
 camera = picamera.PiCamera()
-time_of_day = "DAY"
 
-
-### Test for first run
-now = datetime.datetime.now().time()
-buzzer.play()
-feed_cat()
-print(">>> Cats have been fed (first run) at " + now.strftime("%H:%M:%S"))
-file_name = '/home/pi/camera/kitten' + now.strftime("%H:%M:%S")
-take_cat_picture(file_name)
-send_text_and_image(file_name + '.jpg')
-###
-
-
-while True:
-    # What time is it?
-    now = datetime.datetime.now().time()
-    print(now)
-    print(time_of_day)
-
-    if feedtime_morning < now < feedtime_evening and time_of_day != "DAY":
-        time_of_day = "DAY"
-        buzzer.play()
-        feed_cat()
-        print(">>> Cats have been fed in the morning at " + now.strftime("%H:%M:%S"))
-        file_name = '/home/pi/camera/kitten' + now.strftime("%H:%M:%S")
-        take_cat_picture(file_name)
-        send_text_and_image(file_name + '.jpg')
-
-    elif (now > feedtime_evening or now < feedtime_morning) and time_of_day != "NIGHT":
-        time_of_day = "NIGHT"
-        buzzer.play()
-        feed_cat()
-        print(">>> Cats have been fed in the evening at " + now.strftime("%H:%M:%S"))
-        image_name = '/home/pi/camera/kitten' + now.strftime("%H:%M:%S") + '.jpg'
-        file_name = '/home/pi/camera/kitten' + now.strftime("%H:%M:%S")
-        take_cat_picture(file_name)
-        send_text_and_image(file_name + '.jpg')
-
-    #  Wait another 5min
-    time.sleep(300)
+if __name__ == "__main__":
+    buzzer.play()
+    dispense_food()
+    time_now = datetime.datetime.now().time().strftime("%H:%M:%S")
+    print(">>> Cats have been fed at " + time_now)
+    file_name = '/home/pi/Pictures/kittens/kitten' + time_now
+    take_cat_picture(file_name)
+    send_text_and_image(file_name + '.jpg')
